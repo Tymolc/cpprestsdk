@@ -208,6 +208,12 @@ TEST(escaped_unicode_string)
     const auto euro = to_string_t("\xE2\x82\xAC");
     VERIFY_ARE_EQUAL(euro, str.as_string());
 
+    // UTF-16 character with surrogate pair
+    str = json::value::parse(U("\"\\ud83d\\ude00\""));
+    // Grinning Face emoji as a hexadecimal UTF-8
+    const auto emoji = to_string_t("\xF0\x9F\x98\x80");
+    VERIFY_ARE_EQUAL(emoji, str.as_string());
+
     VERIFY_PARSING_THROW(json::value::parse(U("\"\\u0klB\"")));
 }
 
@@ -651,7 +657,7 @@ TEST(non_default_locale, "Ignore:Android", "Locale unsupported on Android")
 
         setlocale(LC_ALL, originalLocale.c_str());
         setlocale(LC_NUMERIC, changedLocale.c_str());
-    
+
         // cpprestsdk stream serialize
         utility::stringstream_t stream;
         stream << v;
@@ -731,7 +737,7 @@ TEST(parse_overload_failed)
 
     utility::stringstream_t stream;
     stream << str;
-    
+
     parsedObject = json::value::parse(arrStr, streamErr);
     VERIFY_IS_TRUE(streamErr.value() > 0);
     VERIFY_IS_TRUE(parsedObject.is_null());
