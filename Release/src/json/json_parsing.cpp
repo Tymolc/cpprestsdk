@@ -770,13 +770,15 @@ inline bool JSON_Parser<CharType>::handle_unescape_char(Token &token)
         {
             int decoded = convert_unicode_to_code_point(token);
 
+            // handle multi-block characters that start with a high-surrogate
             if (decoded > 55296 && decoded < 56319)
             {
-                GetNextToken(token);
-                ch = NextCharacter();
+                // skip escape character
+                NextCharacter(); NextCharacter();
                 int decoded2 = convert_unicode_to_code_point(token);
 
-                utf16string compoundUTF16 = {static_cast<utf16char>(decoded), static_cast<utf16char>(decoded2)};
+                utf16string compoundUTF16 = { static_cast<utf16char>(decoded),
+                                              static_cast<utf16char>(decoded2) };
                 token.string_val.append(::utility::conversions::utf16_to_utf8(compoundUTF16));
             }
             else
