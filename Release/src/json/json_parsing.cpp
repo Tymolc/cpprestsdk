@@ -714,16 +714,17 @@ int JSON_Parser<CharType>::convert_unicode_to_code_point(Token &token)
         auto ch = NextCharacter();
         int ch_int = static_cast<int>(ch);
         if (ch_int < 0 || ch_int > 127)
-            return false;
+            return -1;
 #ifdef _WIN32
         const int isxdigitResult = _isxdigit_l(ch_int, utility::details::scoped_c_thread_locale::c_locale());
 #else
         const int isxdigitResult = isxdigit(ch_int);
 #endif
         if (!isxdigitResult)
-            return false;
+            return -1;
 
         int val = _hexval[static_cast<size_t>(ch_int)];
+
         _ASSERTE(val != -1);
 
         // Add the input char to the decoded number
@@ -769,6 +770,10 @@ inline bool JSON_Parser<CharType>::handle_unescape_char(Token &token)
         case 'u':
         {
             int decoded = convert_unicode_to_code_point(token);
+            if (decoded == -1)
+            {
+                return false;
+            }
 
             // handle multi-block characters that start with a high-surrogate
             if (decoded > 55296 && decoded < 56319)
